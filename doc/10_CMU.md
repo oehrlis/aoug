@@ -3,16 +3,16 @@
 
 **Ziele:** Konfiguration von Centrally Managed Users für die Datenbank TDB190S. Erweitern des Active Directory Schemas inklusive der Installation des Password Filter Plugins. Erstellen von Mappings für Benutzer und Rollen sowie erfolgreichem Login mit Passwort Authentifizierung.
 
-## Active Directory
+## Active Directory Konfiguration
 
-Arbeitsumgebung für die Übung:
+Arbeitsumgebung:
 
 * **Server:** win2016ad.trivadislabs.com
 * **Benutzer:** Administrator
 
-Die folgenden Arbeiten werden in der Regel in zusammenarbeit mit dem Windows respektive Active Directory Administrator durchgeführt. Je nach Unternehmensgrösse sind allenfalls noch weiter IT Bereich mit involviert.
+Die folgenden Arbeiten werden in der Regel in Zusammenarbeit mit dem Windows respektive Active Directory Administrator durchgeführt. Je nach Unternehmensgrösse sind allenfalls noch weiter IT Bereich mit involviert.
 
-Für das Oracle Wallet wird das Root Zertifikat vom Active Directory Server benötigt. Diesen kann in der LAB Umgebung einfach via Commandline exportiert werden. Dazu öffnet man ein Command Prompt (``cmd.exe``) und exportieren das Root Zertifikat. Das exportiert Root Zertifikat muss Sie anschliessend mit WinSCP auf den Datenbank Server kopieren im Verzeichnis ``/u00/app/oracle/network/admin`` abgelegt werden. Alternativ können man auch das unten aufgeführte Putty SCP Kommando verwenden. 
+Für das Oracle Wallet wird das Root Zertifikat vom Active Directory Server benötigt. Diesen kann in der LAB Umgebung einfach via Commandline exportiert werden. Dazu öffnet man ein Command Prompt (``cmd.exe``) und exportieren das Root Zertifikat. Das exportiert Root Zertifikat muss anschliessend mit WinSCP auf den Datenbank Server in das Verzeichnis ``/u00/app/oracle/network/admin`` kopiert werden. Alternativ kann man das unten aufgeführte Putty SCP Kommando verwenden. 
 
 ```bash
 certutil -ca.cert c:\vagrant_common\config\tnsadmin\RootCA_trivadislabs.com.cer
@@ -20,25 +20,26 @@ certutil -ca.cert c:\vagrant_common\config\tnsadmin\RootCA_trivadislabs.com.cer
 "C:\Program Files\PuTTY\pscp.exe" c:\vagrant_common\config\tnsadmin\RootCA_trivadislabs.com.cer db.trivadislabs.com:/u00/app/oracle/network/admin
 ```
 
-In der Vagrant VM Umgebung ist zudem das Verzeichnis ``c:\vagrant_common\`` auf allen Systemen verfügbar. Somit lässt sich die Datei einfach auf dem Datenbank Server einfach kopieren.
+In der Vagrant VM Umgebung ist zudem das Verzeichnis ``c:\vagrant_common\`` auf allen Systemen verfügbar. Somit lässt sich die Datei einfach auf dem Datenbank Server nutzen.
 
 ```
 cp /vagrant_common/config/tnsadmin/RootCA_trivadislabs.com.cer /u00/app/oracle/network/admin
 ```
 
-Um Oracle CMU mit Passwort Authentifizierung verwenden zu können, muss Active Directory entsprechend angepasst werden. Dazu wird muss mit WinSCP die Datei ``opwdintg.exe`` auf den Active Directory Server kopiert werden. Auf dem Datenbank Server liegt die Datei im Oracle 19c Home ``$ORACLE_HOME/bin/opwdintg.exe``. Alternativ können Sie auch das unten aufgeführte Putty SCP Kommando verwenden.
+Um Oracle CMU mit Passwort Authentifizierung verwenden zu können, muss Active Directory entsprechend angepasst werden. Dazu muss mit WinSCP die Datei ``opwdintg.exe`` auf den Active Directory Server kopiert werden. Auf dem Datenbank Server liegt die Datei im Oracle 19c Home ``$ORACLE_HOME/bin/opwdintg.exe``. Alternativ man das unten aufgeführte Putty SCP Kommando verwenden.
 
 ```bash
 "C:\Program Files\PuTTY\pscp.exe" db.trivadislabs.com:/u00/app/oracle/product/19.0.0.0/bin/opwdintg.exe c:\vagrant_common\config\tnsadmin\
 ```
 
-In der Vagrant VM Umgebung ist zudem das Verzeichnis ``c:\vagrant_common\`` auf allen Systemen verfügbar. Somit lässt sich die Datei einfach auf dem Datenbank Server einfach kopieren.
+In der Vagrant VM Umgebung ist zudem das Verzeichnis ``c:\vagrant_common\`` auf allen Systemen verfügbar. Somit lässt sich die Datei einfach auf dem Datenbank Server kopieren.
 
 ```
 ls -alh $ORACLE_HOME/bin/opwdintg.exe
 cp $ORACLE_HOME/bin/opwdintg.exe /vagrant_common/config/tnsadmin
 ```
-Anschliessend muss die Datei auf dem Active Directory ausgeführt werden, um das AD Schema zu erweitern und das Passwort Filter Plugin zu installieren. Öffnen Sie dazu ein Command Prompt (``cmd.exe``) und führen ``opwdintg.exe`` aus. 
+
+Anschliessend muss die Datei auf dem Active Directory ausgeführt werden, um das AD Schema zu erweitern und das Passwort Filter Plugin zu installieren. Dazu wird ``opwdintg.exe`` direkt in einem Command Shell (``cmd.exe``) ausgeführt. 
 
 ```bash
 c:\vagrant_common\config\tnsadmin\opwdintg.exe
@@ -53,24 +54,24 @@ Bei der Installstion sind folgende Fragen mit Ja respektive Yes zu beantworten:
 
 Nachdem der Active Directory Server neu gestartet wurde, müssen zum Abschluss die neu erstellten Gruppen für die Passwort Verifier entsprechend vergeben werden. Entsprechende Benutzer, welche sich an der Datenbank anmelden, müssen dazu ein Oracle Password Hash haben. Dieser wird vom Password Filter bei allen Benutzer erstellt, welche in der Gruppe *ORA_VFR_11G* respektive *ORA_VFR_12C* sind. Zudem müssen diese Benutzer ihr Passwort neu setzten, damit das Passwort Filter Plugin auch effektive das Attribut *orclCommonAttribute* setzt.
 
-**Variante 1:** Passen Sie die Gruppe *Trivadis LAB Users* manuell an fügen bei dieser Gruppe neu MemberOf *ORA_VFR_11G* respektive *ORA_VFR_12C* hinzu.
+**Variante 1:** Anpassen der Gruppe *Trivadislabs Users* und manuelles hinzufügen von *ORA_VFR_11G* respektive *ORA_VFR_12C* zu MemberOf.
 
-* Starten Sie *Active Directory Users and Computers*.
-* Wählen Sie im Container Groups die Gruppe *Trivadis LAB Users* aus.
-* Öffnen Sie mit rechtem Mausklick die *Properties*.
-* Im Tab *Member Of* clicken Sie *Add...*
-* Fügen Sie die Gruppe *ORA_VFR_11G* respektive *ORA_VFR_12C* hinzu.
-* Schliessen Sie die Dialoge mit *Ok*.
+* Starten von *Active Directory Users and Computers*.
+* Auswahl der Gruppe *Trivadislabs Users* im Container Groups.
+* Öffnen der *Properties* mit rechtem Mausklick.
+* Im Tab *Member Of* *Add...* auswählen.
+* Hinzufügen der Gruppe *ORA_VFR_11G* respektive *ORA_VFR_12C*.
+* Schliessen der Dialoge mit *Ok*.
   
-Passen Sie manuell die Passwörter der gewünschten Benutzer an. Dazu müssen Sie in *Active Directory Users and Computers* jeweils auf dem Benutzer mit rechtem Mausklick *Reset Password...* wählen und ein neues Passwort setzten.
+Anschliessend manuelles Anpassen der Passwörter für die gewünschten Benutzer. Dazu muss man in *Active Directory Users and Computers* jeweils den Benutzer auswählen und mit rechtem Mausklick *Reset Password...* starten, um ein neues Passwort zu setzten.
 
-**Variante 2:** Öffnen Sie ein PowerShell Fenster und führen das Script ``c:\aoug\lab\04_cmu\reset_ad_users.ps1`` aus. Das Script passt sowohl die Gruppe an und änder die Passwörter aller Benutzer. 
+**Variante 2:** Öffnen eines PowerShell Fenster und ausführen des Scripts ``c:\aoug\lab\04_cmu\reset_ad_users.ps1``. Das Script passt sowohl die Gruppe an und ändert die Passwörter aller Benutzer. 
 
 ```bash
 C:\vagrant\scripts\reset_ad_users.ps1
 ```
 
-Prüfen Sie zur Kontrolle bei einem Benutzer, ob das das Attribut *orclCommonAttribute* gesetzt ist. Die folgende Abbildung zeigt die Properties vom Benutzer King und das Attribut *orclCommonAttribute*.
+Kontrolle ob das Attribut *orclCommonAttribute* gesetzt ist. Die folgende Abbildung zeigt die Properties vom Benutzer King und das Attribut *orclCommonAttribute*.
 
 !["Benutzereigenschaften Benutzer King"](images/User_Account_Preferences_King.png)  
 
@@ -78,14 +79,22 @@ Prüfen Sie zur Kontrolle bei einem Benutzer, ob das das Attribut *orclCommonAtt
 
 Arbeitsumgebung für diesen Abschnitt:
 
-* **Server:** ol7db19.trivadislabs.com
+* **Server:** ol7db18.trivadislabs.com
 * **Benutzer:** oracle
-* **Datenbank:** TDB190S
+* **Datenbank:** TDB180S
+
+CMU benötigt in allen Oracle 18c Versionen einen Patch. Siehe auch MOS Note xxx und xxx. Bevor CMU genutzt werden kann ist zu prüfen ob der Patch installiert ist.
+
+```bash
+$cdh/OPatch/opatch lsinventory
+
+$cdh/OPatch/opatch lsinventory |grep -i 28994890
+```
 
 Erstellen der SQLNet Konfigurationsdatei ``dsi.ora`` mit den folgenden Informationen zum Aktive Directory Server. Eine Beispiel Konfigurationsdatei ist im Verzeichnis ``$cdl/aoug/lab`` vorhanden.
 
 ```bash
-cp $cdl/doag2018/lab/04_cmu/dsi.ora $cdn/admin/dsi.ora
+cp $cdl/aoug/lab/dsi.ora $cdn/admin/dsi.ora
 vi $cdn/admin/dsi.ora
 DSI_DIRECTORY_SERVERS = (win2016ad.trivadislabs.com:389:636)
 DSI_DEFAULT_ADMIN_CONTEXT = "dc=trivadislabs,dc=com"
