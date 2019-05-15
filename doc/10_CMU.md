@@ -1,7 +1,7 @@
 
 # Centrally Managed User 18c
 
-**Ziele:** Konfiguration von Centrally Managed Users für die Datenbank TDB190S. Erweitern des Active Directory Schemas inklusive der Installation des Password Filter Plugins. Erstellen von Mappings für Benutzer und Rollen sowie erfolgreichem Login mit Passwort Authentifizierung.
+**Ziele:** Konfiguration von Centrally Managed Users für die Datenbank TDB180S. Erweitern des Active Directory Schemas inklusive der Installation des Password Filter Plugins. Erstellen von Mappings für Benutzer und Rollen sowie erfolgreichem Login mit Passwort Authentifizierung.
 
 ## Active Directory Konfiguration
 
@@ -17,7 +17,7 @@ Für das Oracle Wallet wird das Root Zertifikat vom Active Directory Server ben�
 ```bash
 certutil -ca.cert c:\vagrant_common\config\tnsadmin\RootCA_trivadislabs.com.cer
 
-"C:\Program Files\PuTTY\pscp.exe" c:\vagrant_common\config\tnsadmin\RootCA_trivadislabs.com.cer db.trivadislabs.com:/u00/app/oracle/network/admin
+"C:\Program Files\PuTTY\pscp.exe" c:\vagrant_common\config\tnsadmin\RootCA_trivadislabs.com.cer ol7db18.trivadislabs.com:/u00/app/oracle/network/admin
 ```
 
 In der Vagrant VM Umgebung ist zudem das Verzeichnis ``c:\vagrant_common\`` auf allen Systemen verfügbar. Somit lässt sich die Datei einfach auf dem Datenbank Server nutzen.
@@ -29,7 +29,7 @@ cp /vagrant_common/config/tnsadmin/RootCA_trivadislabs.com.cer /u00/app/oracle/n
 Um Oracle CMU mit Passwort Authentifizierung verwenden zu können, muss Active Directory entsprechend angepasst werden. Dazu muss mit WinSCP die Datei ``opwdintg.exe`` auf den Active Directory Server kopiert werden. Auf dem Datenbank Server liegt die Datei im Oracle 19c Home ``$ORACLE_HOME/bin/opwdintg.exe``. Alternativ man das unten aufgeführte Putty SCP Kommando verwenden.
 
 ```bash
-"C:\Program Files\PuTTY\pscp.exe" db.trivadislabs.com:/u00/app/oracle/product/19.0.0.0/bin/opwdintg.exe c:\vagrant_common\config\tnsadmin\
+"C:\Program Files\PuTTY\pscp.exe" ol7db18.trivadislabs.com:/u00/app/oracle/product/19.0.0.0/bin/opwdintg.exe c:\vagrant_common\config\tnsadmin\
 ```
 
 In der Vagrant VM Umgebung ist zudem das Verzeichnis ``c:\vagrant_common\`` auf allen Systemen verfügbar. Somit lässt sich die Datei einfach auf dem Datenbank Server kopieren.
@@ -75,6 +75,8 @@ Kontrolle ob das Attribut *orclCommonAttribute* gesetzt ist. Die folgende Abbild
 
 !["Benutzereigenschaften Benutzer King"](images/User_Account_Preferences_King.png)  
 
+Benutzer ``oracle`` für die CMU intergration
+
 ## Server und Datenbank Konfiguration
 
 Arbeitsumgebung für diesen Abschnitt:
@@ -83,7 +85,7 @@ Arbeitsumgebung für diesen Abschnitt:
 * **Benutzer:** oracle
 * **Datenbank:** TDB180S
 
-CMU benötigt in allen Oracle 18c Versionen einen Patch. Siehe auch MOS Note xxx und xxx. Bevor CMU genutzt werden kann ist zu prüfen ob der Patch installiert ist.
+CMU benötigt in allen Oracle 18c Versionen einen Patch. Siehe auch Oracle MOS Note [2462012.1](https://support.oracle.com/epmos/faces/DocumentDisplay?id=2462012.1) *How To Configure Authentication For The Centrally Managed Users In An 18c Database* und Oracle Support Bug OUD 12C: DIGEST-MD5 SASL AUTHENTICATION FAILS IF ORACLECONTEXT ENTRY AND LDAPS [29034231](https://support.oracle.com/epmos/faces/BugDisplay?id=29034231). Bevor CMU genutzt werden kann ist zu prüfen ob der Patch installiert ist.
 
 ```bash
 $cdh/OPatch/opatch lsinventory
@@ -101,14 +103,14 @@ DSI_DEFAULT_ADMIN_CONTEXT = "dc=trivadislabs,dc=com"
 DSI_DIRECTORY_SERVER_TYPE = AD
 ```
 
-Erstellen eines neuen Oracle Wallet für die Datenbank TDB190S.
+Erstellen eines neuen Oracle Wallet für die Datenbank TDB180S.
 
 ```bash
 mkdir $ORACLE_BASE/admin/$ORACLE_SID/wallet
 orapki wallet create -wallet $ORACLE_BASE/admin/$ORACLE_SID/wallet -auto_login
 ```
 
-Fügen Sie die Einträge für den Benutzername, Passwort und den Distinguished Name hinzu.
+Hinzufügen der Einträge für den Benutzername, Passwort und den Distinguished Name.
 
 ```bash
 mkstore -wrl $ORACLE_BASE/admin/$ORACLE_SID/wallet -createEntry ORACLE.SECURITY.USERNAME oracle
@@ -184,7 +186,7 @@ ldapsearch -h win2016ad.trivadislabs.com -p 389 \
 
 Arbeitsumgebung für die Übung:
 
-* **Server:** db.trivadislabs.com
+* **Server:** ol7db18.trivadislabs.com
 * **Benutzer:** oracle
 * **Datenbank:** TDB184A
 
@@ -294,12 +296,3 @@ SELECT * FROM session_roles;
 show user
 @sousrinf
 ```
-
-Versuchen Sie ein weiteres Mapping auf einen anderen global shared Datenbankbenutzer zu machen. Funktioniert das? Was gibt dies für Probleme? 
-
-
-* proxy
-* namesauflösung
-* kerberos
-* troubleshooting
-* trigger session info

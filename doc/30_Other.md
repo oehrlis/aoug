@@ -1140,9 +1140,3 @@ show user
 @sousrinf
 SELECT * FROM session_roles;
 ```
-
-## Zusatzaufgaben: Oracle Enterprise User Security
-
-* Erstellen Sie eine Enterprise Rolle für Administratoren
-* Weisen Sie eine Entprechende Gruppe dieser Enterprise Rolle zu
-* Prüfen Sie den Inhalt vom LDAP EUS Context

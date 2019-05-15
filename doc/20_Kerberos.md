@@ -1,5 +1,5 @@
 
-# Übungen: Kerberos Authentifizierung
+#Kerberos Authentifizierung
 
 **Übungsziele:** Konfiguration der Kerberos Authentifizierung für die Datenbanken TDB122A und TDB184. Erstellen eines Benutzers mit Kerberos Authentifizierung sowie erfolgreichem Login lokal (Linux VM) und remote (Windows VM).
 
@@ -83,15 +83,15 @@ trivadislabs.com = TRIVADISLABS.COM
 Nachdem die Keytab Datei auf dem Datenbank Server kopiert worden ist, kann mit ``oklist`` überprüft werden was die Datei für Crypto Algorithmen untersützt. Somit wird zudem indirekt geprüft ob die Keytab Datei verwendet werden kann.
 
 ```bash
-oklist -e -k $cdn/admin/db.trivadislabs.com.keytab
+oklist -e -k $cdn/admin/ol7db18.trivadislabs.com.keytab
 ```
 
 Kontrollieren Sie ob die Namensauflösung wie gewünscht funktioniert.
 
 ```bash
-nslookup ad.trivadislabs.com
+nslookup win2016ad.trivadislabs.com
 nslookup 10.0.0.4
-nslookup db.trivadislabs.com
+nslookup ol7db18.trivadislabs.com
 nslookup 10.0.0.5
 ```
 
@@ -107,7 +107,7 @@ oklist
 
 Arbeitsumgebung für die Übung:
 
-* **Server:** db.trivadislabs.com
+* **Server:** ol7db18.trivadislabs.com
 * **Benutzer:** oracle
   
 Passen Sie den init.ora Parameter OS Prefix an. Für die Kerberos Authentifizierung muss dieser leer sein.
@@ -131,7 +131,7 @@ Login als Benutzer King mit dem zuvor generierten Session Ticket und anzeigen de
 
 ```SQL
 
-connect /@TDB184A
+connect /@TDB180S
 
 show user
 
@@ -158,12 +158,25 @@ Wie ist das jetzt mit Kerberos? Wenn Sie die Übung zu Kerberos erfolgreich abge
 ```bash
 sqh
 host echo LAB01schulung|okinit bond
-connect /@TDB184A
+connect /@TDB180S
 SELECT * FROM session_roles;
 
 show user
 @sousrinf.sql
 ```
+
+```bash
+sqh
+host echo LAB01schulung|okinit fleming
+connect /@TDB180S
+SELECT * FROM session_roles;
+
+show user
+@sousrinf.sql
+
+connect /@TDB180S as sysdba
+```
+
 
 ```bash
 echo LAB01schulung|okinit bond
