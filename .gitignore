@@ -1,0 +1,2 @@
+# ignore mac OS resource forks
+**/*.DS_Store
