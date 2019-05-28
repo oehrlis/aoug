@@ -16,7 +16,7 @@ Für die praktischen Arbeiten im Rahmen des DOAG 2018 Schulungstages, steht pro 
 * **oud.trivadislabs.com** Oracle Directory Server mit Oracle Unified Directory 12c
 * **ad.trivadislabs.com** MS Windows Server 2012 R2 mit Active Directory
 
-!["Training Environment"](images/training_env.png)
+!["Training Environment"](images/LabEnvironment.png)
 *Abb. 2: Architektur Schulungsumgebung*
 
 Die Umgebung ist soweit vorbereitet, dass direkt mit den Übungen gestartet werden kann. 
@@ -188,7 +188,7 @@ Der Active Directory Server basiert auf einer Windows Server 2012 R2 Umgebung (W
 
 Damit eine mehr oder weniger praxis nahe Anbindung an das Active Directory möglich ist, wurde für die fiktive Firma *Trivadis LAB* eine einfache AD Struktur aufgebaut. Die folgende Abbildung zeigt das Organigram inklusive Abteilungen und Mitarbeiter für *Trivadis LAB*. Sämtlich aufgeführte Benutzer können als Testbenutzer verwendet werden. Wobei der Loginname jeweils dem klein geschriebenen Nachname entspricht. Passwort ist für alle Benutzer *LAB01schulung*.
 
-!["Trivadis LAB Company"](images/Trivadislabs_Company.png)
+!["Trivadis LAB Company"](images/OrgChart.png)
 *Abb. 3: Organigram Trivadis LAB Company*
 
 Das fiktive Unternehmen hat folgende Abteilungen:
